@@ -90,7 +90,7 @@ def registry(pm, gov):
 @pytest.fixture
 def sign_token_permit():
     def sign_token_permit(
-        token: Token,
+        token,
         owner: Account,  # NOTE: Must be a eth_key account, not Brownie
         spender: str,
         allowance: int = 2 ** 256 - 1,  # Allowance to set with `permit`
