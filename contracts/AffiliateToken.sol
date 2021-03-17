@@ -7,11 +7,17 @@ import {VaultAPI, BaseWrapper} from "@yearnvaults/contracts/BaseWrapper.sol";
 
 contract AffiliateToken is ERC20, BaseWrapper {
     /// @notice The EIP-712 typehash for the contract's domain
-    bytes32 public constant DOMAIN_TYPEHASH = keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)");
+    bytes32 public constant DOMAIN_TYPEHASH =
+        keccak256(
+            "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
+        );
     bytes32 public immutable DOMAIN_SEPARATOR;
 
     /// @notice The EIP-712 typehash for the permit struct used by the contract
-    bytes32 public constant PERMIT_TYPEHASH = keccak256("Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)");
+    bytes32 public constant PERMIT_TYPEHASH =
+        keccak256(
+            "Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)"
+        );
 
     /// @notice A record of states for signing / validating signatures
     mapping(address => uint256) public nonces;
@@ -31,7 +37,15 @@ contract AffiliateToken is ERC20, BaseWrapper {
         string memory name,
         string memory symbol
     ) public BaseWrapper(_token, _registry) ERC20(name, symbol) {
-        DOMAIN_SEPARATOR = keccak256(abi.encode(DOMAIN_TYPEHASH, keccak256(bytes(name)), keccak256(bytes("1")), _getChainId(), address(this)));
+        DOMAIN_SEPARATOR = keccak256(
+            abi.encode(
+                DOMAIN_TYPEHASH,
+                keccak256(bytes(name)),
+                keccak256(bytes("1")),
+                _getChainId(),
+                address(this)
+            )
+        );
         affiliate = msg.sender;
         _setupDecimals(uint8(ERC20(address(token)).decimals()));
     }
@@ -57,7 +71,10 @@ contract AffiliateToken is ERC20, BaseWrapper {
         uint256 totalShares = totalSupply();
 
         if (totalShares > 0) {
-            return totalVaultBalance(address(this)).mul(numShares).div(totalShares);
+            return
+                totalVaultBalance(address(this)).mul(numShares).div(
+                    totalShares
+                );
         } else {
             return numShares;
         }
@@ -104,7 +121,11 @@ contract AffiliateToken is ERC20, BaseWrapper {
         return _migrate(address(this), amount);
     }
 
-    function migrate(uint256 amount, uint256 maxMigrationLoss) external onlyAffiliate returns (uint256) {
+    function migrate(uint256 amount, uint256 maxMigrationLoss)
+        external
+        onlyAffiliate
+        returns (uint256)
+    {
         return _migrate(address(this), amount, maxMigrationLoss);
     }
 
@@ -130,8 +151,21 @@ contract AffiliateToken is ERC20, BaseWrapper {
         require(owner != address(0), "permit: signature");
         require(block.timestamp <= deadline, "permit: expired");
 
-        bytes32 structHash = keccak256(abi.encode(PERMIT_TYPEHASH, owner, spender, amount, nonces[owner]++, deadline));
-        bytes32 digest = keccak256(abi.encodePacked("\x19\x01", DOMAIN_SEPARATOR, structHash));
+        bytes32 structHash =
+            keccak256(
+                abi.encode(
+                    PERMIT_TYPEHASH,
+                    owner,
+                    spender,
+                    amount,
+                    nonces[owner]++,
+                    deadline
+                )
+            );
+        bytes32 digest =
+            keccak256(
+                abi.encodePacked("\x19\x01", DOMAIN_SEPARATOR, structHash)
+            );
 
         address signatory = ecrecover(digest, v, r, s);
         require(signatory == owner, "permit: unauthorized");
