@@ -88,6 +88,12 @@ def registry(pm, gov):
 
 
 @pytest.fixture
+def new_registry(pm, gov):
+    Registry = pm(config["dependencies"][0]).Registry
+    yield gov.deploy(Registry)
+
+
+@pytest.fixture
 def sign_token_permit():
     def sign_token_permit(
         token,
