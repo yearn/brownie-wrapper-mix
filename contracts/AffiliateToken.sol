@@ -81,12 +81,16 @@ contract AffiliateToken is ERC20, BaseWrapper {
     }
 
     function pricePerShare() external view returns (uint256) {
-        return totalVaultBalance(address(this)).mul(10**uint256(decimals())).div(totalSupply());
+        return
+            totalVaultBalance(address(this)).mul(10**uint256(decimals())).div(
+                totalSupply()
+            );
     }
 
     function _sharesForValue(uint256 amount) internal view returns (uint256) {
         // total wrapper assets before deposit (assumes deposit already occured)
-        uint256 totalWrapperAssets = totalVaultBalance(address(this)).sub(amount);
+        uint256 totalWrapperAssets =
+            totalVaultBalance(address(this)).sub(amount);
 
         if (totalWrapperAssets > 0) {
             return totalSupply().mul(amount).div(totalWrapperAssets);
