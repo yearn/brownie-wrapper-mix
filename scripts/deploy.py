@@ -13,4 +13,5 @@ def main():
     tokenName = "abcxyz"
     tokenSymbol = "xxx"
     
-    affiliatetoken = AffiliateToken.deploy(token, registry, tokenName, tokenSymbol, {"from": accounts[0]})
+    affiliatetoken = AffiliateToken.deploy(token, registry, tokenName, tokenSymbol, {"from": dev})
+    print(f"Deployed {affiliatetoken}")
