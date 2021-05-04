@@ -4,9 +4,10 @@ from brownie import AffiliateToken, Contract, accounts, config, network, project
 from eth_utils import is_checksum_address
 
 import click
-# User Input
-tokenName = "abcdef"
-tokenSymbol = "ABC"
+
+# User Input 
+affiliateTokenName = "abcdef"
+affiliateTokenSymbol = "ABC"
 
 API_VERSION = config["dependencies"][0].split("@")[-1]
 Vault = project.load(
@@ -43,6 +44,8 @@ def main():
         f"""
     Affiliate Token Parameters
       api: {API_VERSION}
+      affiliate token name: {affiliateTokenName}
+      affiliate token symbol: {affiliateTokenSymbol}
       vault: {token.name()}
       symbol: '{token.symbol()}'
     """
@@ -50,6 +53,6 @@ def main():
     
     publish_source = click.confirm("Verify source on etherscan?")
     
-    affiliatetoken = AffiliateToken.deploy(token, registry, tokenName, tokenSymbol, {"from": dev}, publish_source=publish_source)
+    affiliatetoken = AffiliateToken.deploy(token, registry, affiliateTokenName, affiliateTokenSymbol, {"from": dev}, publish_source=publish_source)
     
     print(f"Deployed {affiliatetoken}")
