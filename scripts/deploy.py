@@ -9,7 +9,7 @@ import click
 
 def main():
     token = "xxxxx"
-    registry = "0x3ee41c098f9666ed2ea246f4d2558010e59d63a0"
+    registry = get_address("Registry address,", "v2.registry.ychad.eth")
     tokenName = "abcxyz"
     tokenSymbol = "xxx"
     
