@@ -51,6 +51,9 @@ def main():
     
     publish_source = click.confirm("Verify source on etherscan?")
     
+    if input("Deploy Strategy? y/[N]: ").lower() != "y":
+        return
+    
     affiliatetoken = AffiliateToken.deploy(token, registry, affiliateTokenName, affiliateTokenSymbol, {"from": dev}, publish_source=publish_source)
     
     print(f"Deployed {affiliatetoken}")
