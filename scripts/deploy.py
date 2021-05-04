@@ -8,7 +8,7 @@ from eth_utils import is_checksum_address
 import click
 
 def main():
-    token = "xxxxx"
+    token = Contract.from_explorer(get_address("Underlying token"))
     registry = get_address("Registry address,", "v2.registry.ychad.eth")
     tokenName = "abcxyz"
     tokenSymbol = "xxx"
