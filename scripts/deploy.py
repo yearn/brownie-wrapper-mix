@@ -10,10 +10,6 @@ Vault = project.load(
     Path.home() / ".brownie" / "packages" / config["dependencies"][0]
 ).Vault
 
-def set_input():
-    affiliateTokenName = click.prompt('Enter the token name for your affiliate token')
-    affiliateTokenSymbol = click.prompt('Enter the token symbol for your affiliate token')
-
 def get_address(msg: str, default: str = None) -> str:
   
     val = click.prompt(msg, default=default)
@@ -39,6 +35,9 @@ def main():
     print(f"You are using: 'dev' [{dev.address}]")
     token = Contract.from_explorer(get_address("Underlying token"))
     registry = get_address("Registry address,", "v2.registry.ychad.eth")
+    
+    affiliateTokenName = click.prompt('Enter the token name for your affiliate token')
+    affiliateTokenSymbol = click.prompt('Enter the token symbol for your affiliate token')
     
     print(
         f"""
