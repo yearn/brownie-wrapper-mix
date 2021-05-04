@@ -43,11 +43,9 @@ def main():
     print(
         f"""
     Affiliate Token Parameters
-      api: {API_VERSION}
-      affiliate token name: {affiliateTokenName}
-      affiliate token symbol: {affiliateTokenSymbol}
-      vault: {token.name()}
-      symbol: '{token.symbol()}'
+        name: '{affiliateTokenName}'
+      symbol: '{affiliateTokenSymbol}'
+       token: {token.address}
     """
     )
     
