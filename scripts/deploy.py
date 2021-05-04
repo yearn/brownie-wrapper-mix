@@ -39,7 +39,17 @@ def main():
     tokenName = token.name()
     tokenSymbol = token.symbol()
     
+    print(
+        f"""
+    Affiliate Token Parameters
+      api: {API_VERSION}
+      vault: {tokenName}
+      symbol: '{tokenSymbol}'
+    """
+    )
+    
+    publish_source = click.confirm("Verify source on etherscan?")
+    
     affiliatetoken = AffiliateToken.deploy(token, registry, tokenName, tokenSymbol, {"from": dev}, publish_source=publish_source)
     
     print(f"Deployed {affiliatetoken}")
-    
