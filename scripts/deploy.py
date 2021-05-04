@@ -5,14 +5,14 @@ from eth_utils import is_checksum_address
 
 import click
 
-# User Input 
-affiliateTokenName = "abcdef"
-affiliateTokenSymbol = "ABC"
-
 API_VERSION = config["dependencies"][0].split("@")[-1]
 Vault = project.load(
     Path.home() / ".brownie" / "packages" / config["dependencies"][0]
 ).Vault
+
+def set_input():
+    affiliateTokenName = click.prompt('Enter the token name for your affiliate token')
+    affiliateTokenSymbol = click.prompt('Enter the token symbol for your affiliate token')
 
 def get_address(msg: str, default: str = None) -> str:
   
