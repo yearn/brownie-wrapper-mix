@@ -89,9 +89,10 @@ contract AffiliateToken is ERC20, BaseWrapper {
 
     function _sharesForValue(uint256 amount) internal view returns (uint256) {
         // total wrapper assets before deposit (assumes deposit already occured)
-        if (totalVaultBalance(address(this)) >= amount) {
-            uint256 totalWrapperAssets =
-                totalVaultBalance(address(this)).sub(amount);
+        uint256 totalWrapperAssets =
+            totalVaultBalance(address(this)).sub(amount);
+
+        if (totalWrapperAssets > 0) {
             return totalSupply().mul(amount).div(totalWrapperAssets);
         } else {
             return amount;
@@ -104,7 +105,7 @@ contract AffiliateToken is ERC20, BaseWrapper {
 
     function deposit(uint256 amount) public returns (uint256 deposited) {
         deposited = _deposit(msg.sender, address(this), amount, true); // `true` = pull from `msg.sender`
-        uint256 shares = _sharesForValue(amount); // NOTE: Must be calculated after deposit is handled
+        uint256 shares = _sharesForValue(deposited); // NOTE: Must be calculated after deposit is handled
         _mint(msg.sender, shares);
     }
 
