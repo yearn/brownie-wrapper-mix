@@ -54,7 +54,7 @@ def main():
 
     publish_source = click.confirm("Verify source on etherscan?")
 
-    if input("Deploy Strategy? y/[N]: ").lower() != "y":
+    if input("Deploy Affiliate Token? y/[N]: ").lower() != "y":
         return
 
     affiliatetoken = AffiliateToken.deploy(
