@@ -1,7 +1,8 @@
 from pathlib import Path
 
-from brownie import Strategy, accounts, config, network, project, web3
+from brownie import AffiliateToken, Contract, accounts, config, network, project, web3
 from eth_utils import is_checksum_address
+
 import click
 
 API_VERSION = config["dependencies"][0].split("@")[-1]
@@ -11,6 +12,7 @@ Vault = project.load(
 
 
 def get_address(msg: str, default: str = None) -> str:
+
     val = click.prompt(msg, default=default)
 
     # Keep asking user for click.prompt until it passes
@@ -33,26 +35,35 @@ def main():
     print(f"You are using the '{network.show_active()}' network")
     dev = accounts.load(click.prompt("Account", type=click.Choice(accounts.load())))
     print(f"You are using: 'dev' [{dev.address}]")
+    token = Contract.from_explorer(get_address("Underlying token"))
+    registry = get_address("Registry address,", "v2.registry.ychad.eth")
 
-    if input("Is there a Vault for this strategy already? y/[N]: ").lower() == "y":
-        vault = Vault.at(get_address("Deployed Vault: "))
-        assert vault.apiVersion() == API_VERSION
-    else:
-        print("You should deploy one vault using scripts from Vault project")
-        return  # TODO: Deploy one using scripts from Vault project
+    affiliateTokenName = click.prompt("Enter the token name for your affiliate token")
+    affiliateTokenSymbol = click.prompt(
+        "Enter the token symbol for your affiliate token"
+    )
 
     print(
         f"""
-    Strategy Parameters
-
-       api: {API_VERSION}
-     token: {vault.token()}
-      name: '{vault.name()}'
-    symbol: '{vault.symbol()}'
+    Affiliate Token Parameters
+        name: '{affiliateTokenName}'
+      symbol: '{affiliateTokenSymbol}'
+       token: {token.address}
     """
     )
+
     publish_source = click.confirm("Verify source on etherscan?")
-    if input("Deploy Strategy? y/[N]: ").lower() != "y":
+
+    if input("Deploy Affiliate Token? y/[N]: ").lower() != "y":
         return
 
-    strategy = Strategy.deploy(vault, {"from": dev}, publish_source=publish_source)
+    affiliatetoken = AffiliateToken.deploy(
+        token,
+        registry,
+        affiliateTokenName,
+        affiliateTokenSymbol,
+        {"from": dev},
+        publish_source=publish_source,
+    )
+
+    print(f"Deployed {affiliatetoken}")
