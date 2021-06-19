@@ -96,7 +96,7 @@ def test_deposit_max(token, registry, vault, affiliate_token, gov, rando):
     assert affiliate_token.balanceOf(rando) == 10000
     assert vault.balanceOf(rando) == 0
     assert affiliate_token.totalSupply() == 10000
-    
+
 
 def test_migrate(token, registry, create_vault, affiliate_token, gov, rando, affiliate):
     vault1 = create_vault(releaseDelta=1, token=token)
