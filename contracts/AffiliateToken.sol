@@ -92,7 +92,7 @@ contract AffiliateToken is ERC20, BaseWrapper {
         uint256 totalVaultBal = totalVaultBalance(address(this));
         if (totalVaultBal > amount) {
             uint256 totalWrapperAssets = totalVaultBal.sub(amount);
-            return totalSupply().mul(amount).div(totalWrapperAssets);           
+            return totalSupply().mul(amount).div(totalWrapperAssets);
         } else {
             return amount;
         }
@@ -155,21 +155,19 @@ contract AffiliateToken is ERC20, BaseWrapper {
         require(owner != address(0), "permit: signature");
         require(block.timestamp <= deadline, "permit: expired");
 
-        bytes32 structHash =
-            keccak256(
-                abi.encode(
-                    PERMIT_TYPEHASH,
-                    owner,
-                    spender,
-                    amount,
-                    nonces[owner]++,
-                    deadline
-                )
-            );
-        bytes32 digest =
-            keccak256(
-                abi.encodePacked("\x19\x01", DOMAIN_SEPARATOR, structHash)
-            );
+        bytes32 structHash = keccak256(
+            abi.encode(
+                PERMIT_TYPEHASH,
+                owner,
+                spender,
+                amount,
+                nonces[owner]++,
+                deadline
+            )
+        );
+        bytes32 digest = keccak256(
+            abi.encodePacked("\x19\x01", DOMAIN_SEPARATOR, structHash)
+        );
 
         address signatory = ecrecover(digest, v, r, s);
         require(signatory == owner, "permit: unauthorized");

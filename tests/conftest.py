@@ -147,12 +147,13 @@ def sign_token_permit():
 
 @pytest.fixture
 def live_token(live_vault):
-    token_address = live_vault.token()  # this will be the address of the Curve LP token 
+    token_address = live_vault.token()  # this will be the address of the Curve LP token
     yield Contract(token_address)
+
 
 @pytest.fixture
 def live_vault():
-    yield Contract("0x986b4aff588a109c09b50a03f42e4110e29d353f") #yvseth
+    yield Contract("0x986b4aff588a109c09b50a03f42e4110e29d353f")  # yvseth
 
 
 @pytest.fixture
@@ -174,7 +175,9 @@ def live_registry():
 
 @pytest.fixture
 def live_whale(accounts):
-    whale = accounts.at("0x3c0ffff15ea30c35d7a85b85c0782d6c94e1d238", force=True) # make sure this address holds big bags of want()
+    whale = accounts.at(
+        "0x3c0ffff15ea30c35d7a85b85c0782d6c94e1d238", force=True
+    )  # make sure this address holds big bags of want()
     yield whale
 
 
