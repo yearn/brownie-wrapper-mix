@@ -82,6 +82,12 @@ def test_deposit(token, registry, vault, affiliate_token, gov, rando):
     affiliate_token.deposit(10000, {"from": rando})
     assert affiliate_token.balanceOf(rando) == 10000
     assert vault.balanceOf(rando) == 0
+    # Deposit max
+    token.transfer(rando, 10000, {"from": gov})
+    token.approve(affiliate_token, 10000, {"from": rando})
+    affiliate_token.deposit({"from": rando})
+    assert affiliate_token.balanceOf(rando) == 20000
+    assert vault.balanceOf(rando) == 0
 
 
 def test_deposit_max(token, registry, vault, affiliate_token, gov, rando):
