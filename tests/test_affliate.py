@@ -99,7 +99,7 @@ def test_deposit_max(token, registry, vault, affiliate_token, gov, rando):
 
 
 def test_migrate(token, registry, create_vault, affiliate_token, gov, rando, affiliate):
-    vault1 = create_vault(releaseDelta=1, token=token)
+    vault1 = create_vault(releaseDelta=3, token=token)
     registry.newRelease(vault1, {"from": gov})
     registry.endorseVault(vault1, {"from": gov})
     token.transfer(rando, 10000, {"from": gov})
