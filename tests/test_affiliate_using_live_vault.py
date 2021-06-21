@@ -10,7 +10,11 @@ def test_config_live(gov, live_token, live_vault, live_registry, live_affiliate_
     assert live_affiliate_token.token() == live_token
     assert live_affiliate_token.name() == "Affiliate " + live_token.symbol()
     assert live_affiliate_token.symbol() == "af" + live_token.symbol()
-    assert live_affiliate_token.decimals() == live_vault.decimals() == live_token.decimals()
+    assert (
+        live_affiliate_token.decimals()
+        == live_vault.decimals()
+        == live_token.decimals()
+    )
     assert live_registry.numVaults(live_token) > 0
     assert live_affiliate_token.bestVault() == live_vault
     assert live_affiliate_token.allVaults() == [live_vault]
@@ -38,7 +42,9 @@ def test_setAffiliate_live(affiliate, live_affiliate_token, rando):
         live_affiliate_token.acceptAffiliate({"from": affiliate})
 
 
-def test_setRegistry_live(rando, affiliate, live_gov, live_affiliate_token, new_registry, gov):
+def test_setRegistry_live(
+    rando, affiliate, live_gov, live_affiliate_token, new_registry, gov
+):
     with brownie.reverts():
         live_affiliate_token.setRegistry(rando, {"from": rando})
 
@@ -70,7 +76,9 @@ def test_deposit_live(live_token, live_vault, live_affiliate_token, live_whale, 
     assert live_vault.balanceOf(rando) == 0
 
 
-def test_deposit_max_live(live_token, live_vault, live_affiliate_token, live_whale, rando):
+def test_deposit_max_live(
+    live_token, live_vault, live_affiliate_token, live_whale, rando
+):
     live_token.transfer(rando, 10000, {"from": live_whale})
     assert live_affiliate_token.balanceOf(rando) == live_vault.balanceOf(rando) == 0
 
@@ -84,7 +92,7 @@ def test_deposit_max_live(live_token, live_vault, live_affiliate_token, live_wha
 
 # NOTE: This test will fail.
 # NOTE: Because the live vault is already using the most recent apiVersion, we cannot deploy and endorse a new vault for this token
-'''  
+"""  
 def test_migrate_live(live_token, live_registry, create_vault, live_affiliate_token, gov, live_gov, live_whale, rando, affiliate):
     vault1 = create_vault(releaseDelta=3, token=live_token)
     vault1.setGovernance(live_gov, {"from": gov})
@@ -109,7 +117,8 @@ def test_migrate_live(live_token, live_registry, create_vault, live_affiliate_to
     assert live_affiliate_token.balanceOf(rando) == 10000
     assert vault1.balanceOf(live_affiliate_token) == 0
     assert vault2.balanceOf(live_affiliate_token) == 10000
-'''
+"""
+
 
 def test_transfer_live(live_token, live_affiliate_token, live_whale, rando, affiliate):
     # NOTE: Reset balance to 0
