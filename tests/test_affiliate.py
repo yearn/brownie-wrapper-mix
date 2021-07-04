@@ -167,3 +167,16 @@ def test_permit(chain, rando, affiliate_token, sign_token_permit):
         {"from": rando},
     )
     assert affiliate_token.allowance(owner.address, rando) == AMOUNT
+
+
+def test_withdraw_half(token, registry, vault, affiliate_token, gov, rando):
+    registry.newRelease(vault, {"from": gov})
+    registry.endorseVault(vault, {"from": gov})
+    token.transfer(rando, 10000, {"from": gov})
+    token.approve(affiliate_token, 10000, {"from": rando})
+    affiliate_token.deposit(10000, {"from": rando})
+
+    # NOTE: Must approve affiliate_token to withdraw
+    affiliate_token.withdraw(5000, {"from": rando})
+    assert affiliate_token.balanceOf(rando) == 5000
+    assert token.balanceOf(rando) == 5000
