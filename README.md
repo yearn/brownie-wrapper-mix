@@ -1,5 +1,9 @@
 # Yearn Affiliate Wrapper Brownie Mix
 
+## Warning
+
+This repo is for inspiration purposes, this code isn't audited.
+
 ## What you'll find here
 
 - Basic Solidity Smart Contract for creating your own Yearn Affiliate Wrapper ([`contracts/AffiliateToken.sol`](contracts/AffiliateToken.sol))
