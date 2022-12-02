@@ -1,12 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity ^0.6.12;
+pragma solidity ^0.8.17;
 pragma experimental ABIEncoderV2;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-import {Math} from "@openzeppelin/contracts/math/Math.sol";
-import {SafeMath} from "@openzeppelin/contracts/math/SafeMath.sol";
-
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {VaultAPI} from "@yearnvaults/contracts/BaseStrategy.sol";
 
 interface RegistryAPI {
@@ -33,8 +30,6 @@ interface RegistryAPI {
  *
  */
 abstract contract BaseWrapper {
-    using Math for uint256;
-    using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
     IERC20 public token;
@@ -54,7 +49,7 @@ abstract contract BaseWrapper {
     // VaultsAPI.depositLimit is unlimited
     uint256 constant UNCAPPED_DEPOSITS = type(uint256).max;
 
-    constructor(address _token, address _registry) public {
+    constructor(address _token, address _registry) {
         // Recommended to use a token with a `Registry.latestVault(_token) != address(0)`
         token = IERC20(_token);
         // Recommended to use `v2.registry.ychad.eth`
@@ -141,12 +136,10 @@ abstract contract BaseWrapper {
         VaultAPI[] memory vaults = allVaults();
 
         for (uint256 id = 0; id < vaults.length; id++) {
-            balance = balance.add(
-                vaults[id]
-                .balanceOf(account)
-                .mul(vaults[id].pricePerShare())
-                .div(10**uint256(vaults[id].decimals()))
-            );
+            balance =
+                balance +
+                ((vaults[id].balanceOf(account) * vaults[id].pricePerShare()) /
+                    10**uint256(vaults[id].decimals()));
         }
     }
 
@@ -159,7 +152,7 @@ abstract contract BaseWrapper {
         VaultAPI[] memory vaults = allVaults();
 
         for (uint256 id = 0; id < vaults.length; id++) {
-            assets = assets.add(vaults[id].totalAssets());
+            assets = assets + vaults[id].totalAssets();
         }
     }
 
@@ -202,7 +195,7 @@ abstract contract BaseWrapper {
         }
 
         uint256 afterBal = token.balanceOf(address(this));
-        deposited = beforeBal.sub(afterBal);
+        deposited = beforeBal - afterBal;
         // `receiver` now has shares of `_bestVault` as balance, converted to `token` here
         // Issue a refund if not everything was deposited
         if (depositor != address(this) && afterBal > 0)
@@ -238,14 +231,14 @@ abstract contract BaseWrapper {
             // Restrict by the allowance that `sender` has to this contract
             // NOTE: No need for allowance check if `sender` is this contract
             if (sender != address(this)) {
-                availableShares = Math.min(
+                availableShares = min(
                     availableShares,
                     vaults[id].allowance(sender, address(this))
                 );
             }
 
             // Limit by maximum withdrawal size from each vault
-            availableShares = Math.min(
+            availableShares = min(
                 availableShares,
                 vaults[id].maxAvailableShares()
             );
@@ -262,10 +255,9 @@ abstract contract BaseWrapper {
 
                 if (amount != WITHDRAW_EVERYTHING) {
                     // Compute amount to withdraw fully to satisfy the request
-                    uint256 estimatedShares = amount
-                    .sub(withdrawn) // NOTE: Changes every iteration
-                    .mul(10**uint256(vaults[id].decimals()))
-                    .div(vaults[id].pricePerShare()); // NOTE: Every Vault is different
+                    uint256 estimatedShares = ((amount - withdrawn) *
+                        10**uint256(vaults[id].decimals())) / // NOTE: Changes every iteration
+                        vaults[id].pricePerShare(); // NOTE: Every Vault is different
 
                     // Limit amount to withdraw to the maximum made available to this contract
                     // NOTE: Avoid corner case where `estimatedShares` isn't precise enough
@@ -273,16 +265,16 @@ abstract contract BaseWrapper {
                     if (
                         estimatedShares > 0 && estimatedShares < availableShares
                     ) {
-                        withdrawn = withdrawn.add(
-                            vaults[id].withdraw(estimatedShares)
-                        );
+                        withdrawn =
+                            withdrawn +
+                            vaults[id].withdraw(estimatedShares);
                     } else {
-                        withdrawn = withdrawn.add(
-                            vaults[id].withdraw(availableShares)
-                        );
+                        withdrawn =
+                            withdrawn +
+                            vaults[id].withdraw(availableShares);
                     }
                 } else {
-                    withdrawn = withdrawn.add(vaults[id].withdraw());
+                    withdrawn = withdrawn + vaults[id].withdraw();
                 }
 
                 // Check if we have fully satisfied the request
@@ -295,18 +287,18 @@ abstract contract BaseWrapper {
         // NOTE: Invariant is `withdrawn <= amount`
         if (
             withdrawn > amount &&
-            withdrawn.sub(amount) >
-            _bestVault.pricePerShare().div(10**_bestVault.decimals())
+            withdrawn - amount >
+            _bestVault.pricePerShare() / 10**_bestVault.decimals()
         ) {
             // Don't forget to approve the deposit
             if (
                 token.allowance(address(this), address(_bestVault)) <
-                withdrawn.sub(amount)
+                withdrawn - amount
             ) {
                 token.safeApprove(address(_bestVault), UNLIMITED_APPROVAL); // Vaults are trusted
             }
 
-            _bestVault.deposit(withdrawn.sub(amount), sender);
+            _bestVault.deposit(withdrawn - amount, sender);
             withdrawn = amount;
         }
 
@@ -343,7 +335,7 @@ abstract contract BaseWrapper {
             _depositLimit < UNCAPPED_DEPOSITS && _amount < WITHDRAW_EVERYTHING
         ) {
             // Can only deposit up to this amount
-            uint256 _depositLeft = _depositLimit.sub(_totalAssets);
+            uint256 _depositLeft = _depositLimit - _totalAssets;
             if (_amount > _depositLeft) _amount = _depositLeft;
         }
 
@@ -362,7 +354,11 @@ abstract contract BaseWrapper {
             // NOTE: Due to the precision loss of certain calculations, there is a small inefficency
             //       on how migrations are calculated, and this could lead to a DoS issue. Hence, this
             //       value is made to be configurable to allow the user to specify how much is acceptable
-            require(withdrawn.sub(migrated) <= maxMigrationLoss);
+            require(withdrawn - migrated <= maxMigrationLoss);
         } // else: nothing to migrate! (not a failure)
+    }
+
+    function min(uint256 a, uint256 b) internal pure returns (uint256) {
+        return a < b ? a : b;
     }
 }
