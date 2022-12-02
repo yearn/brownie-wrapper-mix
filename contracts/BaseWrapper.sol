@@ -16,7 +16,10 @@ interface RegistryAPI {
 
     function numVaults(address token) external view returns (uint256);
 
-    function vaults(address token, uint256 deploymentId) external view returns (address);
+    function vaults(address token, uint256 deploymentId)
+        external
+        view
+        returns (address);
 }
 
 /**
@@ -101,8 +104,14 @@ abstract contract BaseWrapper {
             vaults[vault_id] = _cachedVaults[vault_id];
         }
 
-        for (uint256 vault_id = cache_length; vault_id < num_vaults; vault_id++) {
-            vaults[vault_id] = VaultAPI(registry.vaults(address(token), vault_id));
+        for (
+            uint256 vault_id = cache_length;
+            vault_id < num_vaults;
+            vault_id++
+        ) {
+            vaults[vault_id] = VaultAPI(
+                registry.vaults(address(token), vault_id)
+            );
         }
 
         return vaults;
@@ -124,11 +133,20 @@ abstract contract BaseWrapper {
      *  @param account The address of the account.
      *  @return balance of token for the account accross all the vaults.
      */
-    function totalVaultBalance(address account) public view returns (uint256 balance) {
+    function totalVaultBalance(address account)
+        public
+        view
+        returns (uint256 balance)
+    {
         VaultAPI[] memory vaults = allVaults();
 
         for (uint256 id = 0; id < vaults.length; id++) {
-            balance = balance.add(vaults[id].balanceOf(account).mul(vaults[id].pricePerShare()).div(10**uint256(vaults[id].decimals())));
+            balance = balance.add(
+                vaults[id]
+                .balanceOf(account)
+                .mul(vaults[id].pricePerShare())
+                .div(10**uint256(vaults[id].decimals()))
+            );
         }
     }
 
@@ -157,7 +175,11 @@ abstract contract BaseWrapper {
             if (amount != DEPOSIT_EVERYTHING) {
                 token.safeTransferFrom(depositor, address(this), amount);
             } else {
-                token.safeTransferFrom(depositor, address(this), token.balanceOf(depositor));
+                token.safeTransferFrom(
+                    depositor,
+                    address(this),
+                    token.balanceOf(depositor)
+                );
             }
         }
 
@@ -183,7 +205,8 @@ abstract contract BaseWrapper {
         deposited = beforeBal.sub(afterBal);
         // `receiver` now has shares of `_bestVault` as balance, converted to `token` here
         // Issue a refund if not everything was deposited
-        if (depositor != address(this) && afterBal > 0) token.safeTransfer(depositor, afterBal);
+        if (depositor != address(this) && afterBal > 0)
+            token.safeTransfer(depositor, afterBal);
     }
 
     function _withdraw(
@@ -215,16 +238,27 @@ abstract contract BaseWrapper {
             // Restrict by the allowance that `sender` has to this contract
             // NOTE: No need for allowance check if `sender` is this contract
             if (sender != address(this)) {
-                availableShares = Math.min(availableShares, vaults[id].allowance(sender, address(this)));
+                availableShares = Math.min(
+                    availableShares,
+                    vaults[id].allowance(sender, address(this))
+                );
             }
 
             // Limit by maximum withdrawal size from each vault
-            availableShares = Math.min(availableShares, vaults[id].maxAvailableShares());
+            availableShares = Math.min(
+                availableShares,
+                vaults[id].maxAvailableShares()
+            );
 
             if (availableShares > 0) {
                 // Intermediate step to move shares to this contract before withdrawing
                 // NOTE: No need for share transfer if this contract is `sender`
-                if (sender != address(this)) vaults[id].transferFrom(sender, address(this), availableShares);
+                if (sender != address(this))
+                    vaults[id].transferFrom(
+                        sender,
+                        address(this),
+                        availableShares
+                    );
 
                 if (amount != WITHDRAW_EVERYTHING) {
                     // Compute amount to withdraw fully to satisfy the request
@@ -236,10 +270,16 @@ abstract contract BaseWrapper {
                     // Limit amount to withdraw to the maximum made available to this contract
                     // NOTE: Avoid corner case where `estimatedShares` isn't precise enough
                     // NOTE: If `0 < estimatedShares < 1` but `availableShares > 1`, this will withdraw more than necessary
-                    if (estimatedShares > 0 && estimatedShares < availableShares) {
-                        withdrawn = withdrawn.add(vaults[id].withdraw(estimatedShares));
+                    if (
+                        estimatedShares > 0 && estimatedShares < availableShares
+                    ) {
+                        withdrawn = withdrawn.add(
+                            vaults[id].withdraw(estimatedShares)
+                        );
                     } else {
-                        withdrawn = withdrawn.add(vaults[id].withdraw(availableShares));
+                        withdrawn = withdrawn.add(
+                            vaults[id].withdraw(availableShares)
+                        );
                     }
                 } else {
                     withdrawn = withdrawn.add(vaults[id].withdraw());
@@ -253,9 +293,16 @@ abstract contract BaseWrapper {
 
         // If we have extra, deposit back into `_bestVault` for `sender`
         // NOTE: Invariant is `withdrawn <= amount`
-        if (withdrawn > amount && withdrawn.sub(amount) > _bestVault.pricePerShare().div(10**_bestVault.decimals())) {
+        if (
+            withdrawn > amount &&
+            withdrawn.sub(amount) >
+            _bestVault.pricePerShare().div(10**_bestVault.decimals())
+        ) {
             // Don't forget to approve the deposit
-            if (token.allowance(address(this), address(_bestVault)) < withdrawn.sub(amount)) {
+            if (
+                token.allowance(address(this), address(_bestVault)) <
+                withdrawn.sub(amount)
+            ) {
                 token.safeApprove(address(_bestVault), UNLIMITED_APPROVAL); // Vaults are trusted
             }
 
@@ -271,7 +318,10 @@ abstract contract BaseWrapper {
         return _migrate(account, MIGRATE_EVERYTHING);
     }
 
-    function _migrate(address account, uint256 amount) internal returns (uint256) {
+    function _migrate(address account, uint256 amount)
+        internal
+        returns (uint256)
+    {
         // NOTE: In practice, it was discovered that <50 was the maximum we've see for this variance
         return _migrate(account, amount, 0);
     }
@@ -289,7 +339,9 @@ abstract contract BaseWrapper {
         if (_depositLimit <= _totalAssets) return 0; // Nothing to migrate (not a failure)
 
         uint256 _amount = amount;
-        if (_depositLimit < UNCAPPED_DEPOSITS && _amount < WITHDRAW_EVERYTHING) {
+        if (
+            _depositLimit < UNCAPPED_DEPOSITS && _amount < WITHDRAW_EVERYTHING
+        ) {
             // Can only deposit up to this amount
             uint256 _depositLeft = _depositLimit.sub(_totalAssets);
             if (_amount > _depositLeft) _amount = _depositLeft;
@@ -297,7 +349,12 @@ abstract contract BaseWrapper {
 
         if (_amount > 0) {
             // NOTE: `false` = don't withdraw from `_bestVault`
-            uint256 withdrawn = _withdraw(account, address(this), _amount, false);
+            uint256 withdrawn = _withdraw(
+                account,
+                address(this),
+                _amount,
+                false
+            );
             if (withdrawn == 0) return 0; // Nothing to migrate (not a failure)
 
             // NOTE: `false` = don't do `transferFrom` because it's already local
