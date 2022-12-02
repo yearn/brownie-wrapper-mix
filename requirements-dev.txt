@@ -1,2 +1,2 @@
-black==21.8b0
-eth-brownie>=1.16.3,<2.0.0
+black==22.10.0
+eth-brownie>=1.19.2,<2.0.0

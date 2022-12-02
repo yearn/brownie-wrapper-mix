@@ -2,8 +2,7 @@
 pragma solidity ^0.6.12;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-
-import {VaultAPI, BaseWrapper} from "@yearnvaults/contracts/BaseWrapper.sol";
+import {VaultAPI, BaseWrapper} from "./BaseWrapper.sol";
 
 contract AffiliateToken is ERC20, BaseWrapper {
     /// @notice The EIP-712 typehash for the contract's domain
