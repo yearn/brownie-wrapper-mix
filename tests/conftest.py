@@ -75,7 +75,7 @@ def create_vault(pm, gov, rewards, guardian, management):
         )
         vault = Vault.at(tx.return_value)
 
-        vault.setDepositLimit(2 ** 256 - 1, {"from": governance})
+        vault.setDepositLimit(2**256 - 1, {"from": governance})
         return vault
 
     yield create_vault
@@ -99,7 +99,7 @@ def sign_token_permit():
         token,
         owner: Account,  # NOTE: Must be a eth_key account, not Brownie
         spender: str,
-        allowance: int = 2 ** 256 - 1,  # Allowance to set with `permit`
+        allowance: int = 2**256 - 1,  # Allowance to set with `permit`
         deadline: int = 0,  # 0 means no time limit
         override_nonce: int = None,
     ):
